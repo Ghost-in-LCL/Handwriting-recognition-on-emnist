@@ -3,7 +3,11 @@ from PyQt5.QtWidgets import QApplication, QMainWindow
 from bin.gui import Ui_MainWindow
 from PyQt5.QtGui import QPainter, QPen
 from PyQt5.QtCore import Qt
-from PIL import ImageGrab, Image
+from PIL import ImageGrab
+from tensorflow import keras
+import numpy as np
+from bin import model2
+from bin.model2 import train_model
 
 
 class MyWindow(Ui_MainWindow, QMainWindow):
@@ -11,9 +15,13 @@ class MyWindow(Ui_MainWindow, QMainWindow):
         super().__init__()
         self.setupUi(self)
         self.setMouseTracking(False)
+
         self.pos_xy = []
 
     def paintEvent(self, event):
+        painter1 = QPainter(self)
+        painter1.setBrush(Qt.white)
+        painter1.drawRect(self.rect())
         painter = QPainter()
         painter.begin(self)
         pen = QPen(Qt.black, 10, Qt.SolidLine)
@@ -48,14 +56,23 @@ class MyWindow(Ui_MainWindow, QMainWindow):
     def cls(self):
         self.pos_xy = []
         self.update()
+        self.label_4.setText("")
         return
 
     def solve(self):
-        desktop = QApplication.desktop()
-        bbox = (self.x()+30, self.y()+40, self.x()+300, self.y()+300)
+        bbox = (self.x() + 31, self.y() + 41, self.x() + 299, self.y() + 299)
         im = ImageGrab.grab(bbox)
-        im = im.resize((28, 28), Image.LANCZOS)
-        im.show()
+        img = im.convert("L")
+        img = img.resize((28, 28))
+        imarr = 255-np.array(img)
+        imarr = imarr/255.0
+        imarr = imarr.reshape((1, 28, 28))
+        # model = keras.models.load_model("model/model.h5")
+        model = keras.models.load_model("test/test.h5")
+
+        pre = model.predict(imarr)
+        classes = np.argmax(pre, axis=1)
+        self.label_4.setNum(classes[0])
         return
 
 
