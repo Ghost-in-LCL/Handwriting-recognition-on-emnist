@@ -77,6 +77,7 @@ class MyWindow(Ui_MainWindow, QMainWindow):
 
 
 if __name__ == "__main__":
+    #train_model()
     app = QApplication(sys.argv)
     form = MyWindow()
     form.show()
